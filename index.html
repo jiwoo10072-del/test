@@ -1,14 +1,162 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-<title> 제목 </title>
+  <meta charset="UTF-8" />
+  <title>To-Do List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+    }
+    .app {
+      max-width: 420px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+    #todo-form {
+      display: flex;
+      gap: 8px;
+    }
+    #todo-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    #todo-form button {
+      padding: 8px 16px;
+      border: none;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #todo-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9fafb;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .todo-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .todo-text.completed {
+      text-decoration: line-through;
+      color: #888;
+    }
+    .delete-btn {
+      border: none;
+      background: none;
+      color: #ef4444;
+      cursor: pointer;
+    }
+  </style>
 </head>
-
 <body>
-안녕하세요.
-<h1>안녕하세요.</h1>
-<h4>안녕하세요.</h4>
-<p>안녕하세요.</p>
-</body>
+  <div class="app">
+    <h1>To-Do List</h1>
 
+    <form id="todo-form">
+      <input
+        type="text"
+        id="todo-input"
+        placeholder="할 일을 입력하세요"
+        autocomplete="off"
+      />
+      <button type="submit">추가</button>
+    </form>
+
+    <ul id="todo-list"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById("todo-form");
+    const input = document.getElementById("todo-input");
+    const list = document.getElementById("todo-list");
+
+    // 시작할 때 localStorage에서 불러오기
+    let todos = JSON.parse(localStorage.getItem("todos") || "[]");
+    renderTodos();
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+
+      const newTodo = {
+        id: Date.now(),
+        text,
+        completed: false,
+      };
+
+      todos.push(newTodo);
+      saveAndRender();
+      input.value = "";
+    });
+
+    function renderTodos() {
+      list.innerHTML = "";
+      todos.forEach((todo) => {
+        const li = document.createElement("li");
+        li.className = "todo-item";
+
+        const left = document.createElement("div");
+        left.className = "todo-left";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = todo.completed;
+        checkbox.addEventListener("change", () => {
+          todo.completed = !todo.completed;
+          saveAndRender();
+        });
+
+        const span = document.createElement("span");
+        span.textContent = todo.text;
+        span.className = "todo-text";
+        if (todo.completed) {
+          span.classList.add("completed");
+        }
+
+        left.appendChild(checkbox);
+        left.appendChild(span);
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.className = "delete-btn";
+        delBtn.addEventListener("click", () => {
+          todos = todos.filter((t) => t.id !== todo.id);
+          saveAndRender();
+        });
+
+        li.appendChild(left);
+        li.appendChild(delBtn);
+        list.appendChild(li);
+      });
+    }
+
+    function saveAndRender() {
+      localStorage.setItem("todos", JSON.stringify(todos));
+      renderTodos();
+    }
+  </script>
+</body>
 </html>
